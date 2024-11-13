@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 public class AnalizadorLenguajeNatural {
 
-    // Definición de patrones para tokens
-    private static final String NUMERO = "\\d+|cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|veinte";
+    // Definición de patrones para tokens utilizando expresiones regulares
+    private static final String NUMERO = "\\b(cero|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|trece|catorce|quince|dieciséis|dieciseis|diecisiete|dieciocho|diecinueve|veinte|veintiuno|veintidós|veintidos|veintitrés|veintitres|veinticuatro|veinticinco|veintiséis|veintiseis|veintisiete|veintiocho|veintinueve|treinta|cuarenta|cincuenta|sesenta|setenta|ochenta|noventa|cien|\\d+)(\\s+y\\s+(uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve))?\\b";
     private static final String SUMA = "\\b(suma|anade|mas)\\b";
     private static final String RESTA = "\\b(resta|quita|menos)\\b";
     private static final String MULTIPLICA = "\\b(multiplica|por)\\b";
@@ -25,12 +25,12 @@ public class AnalizadorLenguajeNatural {
     private static final String COMA = ",";
     private static final String ASIGNACION = "=";
 
-    // Clase Token
+    // Clase que representa un Token
     public static class Token {
 
-        public final String tipo;
-        public final String valor;
-        public final String valorOriginal;
+        public final String tipo;          // Tipo del token (e.g., Numero, OperadorSuma)
+        public final String valor;         // Valor interno del token (e.g., '+', '5')
+        public final String valorOriginal; // Valor original del token en la entrada
 
         public Token(String tipo, String valor, String valorOriginal) {
             this.tipo = tipo;
@@ -45,16 +45,16 @@ public class AnalizadorLenguajeNatural {
         }
     }
 
-    // Resultado del análisis léxico
+    // Clase que almacena el resultado del análisis léxico
     public static class ResultadoLexico {
 
-        public final ArrayList<Token> tokens;
-        public final ArrayList<String> identificadores;
-        public final String expresionOriginal;
-        public final List<String> noReconocidos;
+        public final ArrayList<Token> tokens;             // Lista de tokens reconocidos
+        public final ArrayList<String> identificadores;   // Lista de identificadores encontrados
+        public final String expresionOriginal;            // Expresión original de entrada
+        public final List<String> noReconocidos;          // Elementos no reconocidos en la entrada
 
         public ResultadoLexico(ArrayList<Token> tokens, ArrayList<String> identificadores,
-                               String expresionOriginal, List<String> noReconocidos) {
+                String expresionOriginal, List<String> noReconocidos) {
             this.tokens = tokens;
             this.identificadores = identificadores;
             this.expresionOriginal = expresionOriginal;
@@ -65,8 +65,8 @@ public class AnalizadorLenguajeNatural {
     // Excepción personalizada para errores sintácticos
     public static class ErrorSintactico extends Exception {
 
-        private final String tipoError;
-        private final String sugerencia;
+        private final String tipoError;    // Tipo de error sintáctico
+        private final String sugerencia;   // Sugerencia para corregir el error
 
         public ErrorSintactico(String mensaje, String tipoError, String sugerencia) {
             super(mensaje);
@@ -83,19 +83,19 @@ public class AnalizadorLenguajeNatural {
         }
     }
 
-    // Resultado del análisis sintáctico
+    // Clase que almacena el resultado del análisis sintáctico
     public static class ResultadoSintactico {
 
-        public final boolean esValido;
-        public final List<String> arbolesExpresion;
-        public final List<String> expresionesPostfijas;
-        public final String error;
-        public final String tipoError;
-        public final String sugerencia;
+        public final boolean esValido;                     // Indica si la sintaxis es válida
+        public final List<String> arbolesExpresion;        // Lista de árboles de expresión generados
+        public final List<String> expresionesPostfijas;    // Lista de expresiones en notación postfija
+        public final String error;                         // Mensaje de error si existe
+        public final String tipoError;                     // Tipo de error sintáctico
+        public final String sugerencia;                    // Sugerencia para corregir el error
 
         public ResultadoSintactico(boolean esValido, List<String> arbolesExpresion,
-                                   List<String> expresionesPostfijas, String error,
-                                   String tipoError, String sugerencia) {
+                List<String> expresionesPostfijas, String error,
+                String tipoError, String sugerencia) {
             this.esValido = esValido;
             this.arbolesExpresion = arbolesExpresion;
             this.expresionesPostfijas = expresionesPostfijas;
@@ -105,30 +105,30 @@ public class AnalizadorLenguajeNatural {
         }
     }
 
-    // Resultado completo del análisis
+    // Clase que almacena el resultado completo del análisis (léxico y sintáctico)
     public static class ResultadoAnalisis {
 
-        public final ResultadoLexico resultadoLexico;
-        public final ResultadoSintactico resultadoSintactico;
+        public final ResultadoLexico resultadoLexico;          // Resultado del análisis léxico
+        public final ResultadoSintactico resultadoSintactico;  // Resultado del análisis sintáctico
 
         public ResultadoAnalisis(ResultadoLexico resultadoLexico,
-                                 ResultadoSintactico resultadoSintactico) {
+                ResultadoSintactico resultadoSintactico) {
             this.resultadoLexico = resultadoLexico;
             this.resultadoSintactico = resultadoSintactico;
         }
     }
 
-    // Análisis léxico
+    // Método para realizar el análisis léxico de la entrada
     public ResultadoLexico analizarLexico(String entrada) {
         ArrayList<Token> tokens = new ArrayList<>();
         ArrayList<String> identificadores = new ArrayList<>();
         List<String> noReconocidos = new ArrayList<>();
 
-        // Modificar el orden de los patrones para reconocer identificadores antes de conectores
+        // Compilar el patrón completo utilizando los patrones definidos
         String patronCompleto = String.format(
                 "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s",
-                SUMA, RESTA, MULTIPLICA, POTENCIA, RAIZ,
-                NUMERO, IDENTIFICADOR, CONECTOR_Y, CONECTOR_CON, DIVIDE, COMA, ASIGNACION
+                NUMERO, SUMA, RESTA, MULTIPLICA, POTENCIA, RAIZ,
+                CONECTOR_Y, CONECTOR_CON, DIVIDE, COMA, ASIGNACION, IDENTIFICADOR
         );
 
         Pattern patron = Pattern.compile(patronCompleto, Pattern.CASE_INSENSITIVE);
@@ -149,6 +149,7 @@ public class AnalizadorLenguajeNatural {
             String textoOriginal = entrada.substring(matcher.start(), matcher.end());
             Token token = null;
 
+            // Identificar el tipo de token según el patrón coincidente
             if (textoCoincidente.matches(SUMA)) {
                 token = new Token("OperadorSuma", "+", textoOriginal);
             } else if (textoCoincidente.matches(RESTA)) {
@@ -162,7 +163,8 @@ public class AnalizadorLenguajeNatural {
             } else if (textoCoincidente.matches(RAIZ)) {
                 token = new Token("OperadorRaiz", "√", textoOriginal);
             } else if (textoCoincidente.matches(NUMERO)) {
-                String valorNumerico = convertirNumeroTextoADigito(textoCoincidente);
+                // Convertir el número en texto a su valor numérico
+                String valorNumerico = new ConvertirNumeroTextoADigito().convertirNumeroTextoADigito(textoCoincidente);
                 token = new Token("Numero", valorNumerico, textoOriginal);
             } else if (textoCoincidente.matches(CONECTOR_Y)) {
                 token = new Token("ConectorY", "y", textoOriginal);
@@ -195,6 +197,7 @@ public class AnalizadorLenguajeNatural {
         return new ResultadoLexico(tokens, identificadores, entrada, noReconocidos);
     }
 
+    // Método para convertir números en texto a su valor numérico
     private String convertirNumeroTextoADigito(String numeroTexto) {
         switch (numeroTexto.toLowerCase()) {
             case "cero":
@@ -222,16 +225,16 @@ public class AnalizadorLenguajeNatural {
             case "veinte":
                 return "20";
             default:
-                return numeroTexto;
+                return numeroTexto; // Si no se reconoce, devolver el texto original
         }
     }
 
-    // Analizador sintáctico
+    // Clase interna para el analizador sintáctico
     private class AnalizadorSintactico {
 
-        private final ArrayList<Token> tokens;
-        private int posicionActual;
-        private Token tokenActual;
+        private final ArrayList<Token> tokens; // Lista de tokens a analizar
+        private int posicionActual;            // Posición actual en la lista de tokens
+        private Token tokenActual;             // Token actual en análisis
 
         public AnalizadorSintactico(ArrayList<Token> tokens) {
             this.tokens = tokens;
@@ -239,6 +242,7 @@ public class AnalizadorLenguajeNatural {
             this.tokenActual = tokens.isEmpty() ? null : tokens.get(0);
         }
 
+        // Método principal del análisis sintáctico
         public ResultadoSintactico analizar() {
             try {
                 List<String> arbolesExpresion = new ArrayList<>();
@@ -264,15 +268,18 @@ public class AnalizadorLenguajeNatural {
             }
         }
 
+        // Método para avanzar al siguiente token
         private void avanzar() {
             posicionActual++;
             tokenActual = posicionActual < tokens.size() ? tokens.get(posicionActual) : null;
         }
 
+        // Método para verificar si el token actual coincide con un tipo específico
         private boolean coincide(String tipo) {
             return tokenActual != null && tokenActual.tipo.equals(tipo);
         }
 
+        // Métodos para verificar conectores y operadores
         private boolean coincideConectorY() {
             return tokenActual != null && tokenActual.tipo.equals("ConectorY");
         }
@@ -285,23 +292,26 @@ public class AnalizadorLenguajeNatural {
             return tokenActual != null && esOperador(tokenActual);
         }
 
+        // Método para analizar una expresión completa
         private String expresion() throws ErrorSintactico {
             String resultado = asignacion();
             return resultado;
         }
 
+        // Método para analizar una asignación
         private String asignacion() throws ErrorSintactico {
             if (coincide("Identificador") && siguienteEs("OperadorAsignacion")) {
                 String identificador = tokenActual.valorOriginal;
                 avanzar(); // Avanzar desde el identificador
                 avanzar(); // Avanzar desde el operador de asignación
-                String valor = operacion(); // Analiza la expresión del lado derecho
+                String valor = operacion(); // Analizar la expresión del lado derecho
                 return identificador + " = " + valor;
             } else {
                 return operacion();
             }
         }
 
+        // Método para analizar una operación
         private String operacion() throws ErrorSintactico {
             String izquierda = termino();
 
@@ -331,6 +341,7 @@ public class AnalizadorLenguajeNatural {
             return izquierda;
         }
 
+        // Método para analizar un término (número, identificador u operador)
         private String termino() throws ErrorSintactico {
             if (coincide("Numero") || coincide("Identificador")) {
                 String valor = tokenActual.valorOriginal;
@@ -369,11 +380,13 @@ public class AnalizadorLenguajeNatural {
             }
         }
 
+        // Método para verificar si un operador requiere dos operandos
         private boolean operadorRequiereDosOperandos(String operador) {
             return operador.equals("+") || operador.equals("-") || operador.equals("*")
                     || operador.equals("/") || operador.equals("^");
         }
 
+        // Método para verificar si un token es un operador
         private boolean esOperador(Token token) {
             return token != null && (token.tipo.equals("OperadorSuma")
                     || token.tipo.equals("OperadorResta")
@@ -383,12 +396,13 @@ public class AnalizadorLenguajeNatural {
                     || token.tipo.equals("OperadorRaiz"));
         }
 
+        // Método para verificar el siguiente token sin avanzar
         private boolean siguienteEs(String tipo) {
             return posicionActual + 1 < tokens.size() && tokens.get(posicionActual + 1).tipo.equals(tipo);
         }
     }
 
-    // Método principal para analizar una expresión
+    // Método principal para analizar una expresión (combina análisis léxico y sintáctico)
     public ResultadoAnalisis analizar(String expresion) {
         // Realizar el análisis léxico
         ResultadoLexico resultadoLexico = analizarLexico(expresion);
@@ -405,7 +419,7 @@ public class AnalizadorLenguajeNatural {
         return new ResultadoAnalisis(resultadoLexico, resultadoSintactico);
     }
 
-    // Método para mostrar resultados en un JDialog
+    // Método para mostrar los resultados en un JDialog
     private void mostrarResultadoEnDialog(ResultadoAnalisis resultado) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Resultado del Análisis");
@@ -456,11 +470,11 @@ public class AnalizadorLenguajeNatural {
         dialog.setVisible(true);
     }
 
-    // Clase de resultado semántico
+    // Clase que almacena el resultado del análisis semántico
     public static class ResultadoSemantico {
 
-        public final boolean esValido;
-        public final List<String> errores;
+        public final boolean esValido;        // Indica si el análisis semántico es válido
+        public final List<String> errores;    // Lista de errores semánticos encontrados
 
         public ResultadoSemantico(boolean esValido, List<String> errores) {
             this.esValido = esValido;
@@ -468,7 +482,7 @@ public class AnalizadorLenguajeNatural {
         }
     }
 
-    // Análisis semántico
+    // Método para realizar el análisis semántico
     public ResultadoSemantico analizarSemantico(List<Token> tokens, Map<String, Integer> variablesDefinidas) {
         List<String> errores = new ArrayList<>();
         Map<String, Integer> operadoresYOperandos = new HashMap<>();
@@ -525,11 +539,12 @@ public class AnalizadorLenguajeNatural {
         return new ResultadoSemantico(esValido, errores);
     }
 
+    // Clase interna para almacenar el resultado de la verificación de expresiones
     private class ResultadoVerificacionExpresion {
 
-        public boolean esValido;
-        public List<String> errores;
-        public int posicionSiguiente;
+        public boolean esValido;                // Indica si la expresión es válida
+        public List<String> errores;            // Errores encontrados en la expresión
+        public int posicionSiguiente;           // Posición siguiente después de analizar la expresión
 
         public ResultadoVerificacionExpresion(boolean esValido, List<String> errores, int posicionSiguiente) {
             this.esValido = esValido;
@@ -538,8 +553,9 @@ public class AnalizadorLenguajeNatural {
         }
     }
 
+    // Método para verificar la validez semántica de una expresión
     private ResultadoVerificacionExpresion verificarExpresion(List<Token> tokens, int posicionInicial,
-                                                              Map<String, Integer> variablesDefinidas, Map<String, Integer> operadoresYOperandos) {
+            Map<String, Integer> variablesDefinidas, Map<String, Integer> operadoresYOperandos) {
 
         List<String> errores = new ArrayList<>();
         int i = posicionInicial;
@@ -589,7 +605,7 @@ public class AnalizadorLenguajeNatural {
         return new ResultadoVerificacionExpresion(esValido, errores, i);
     }
 
-    // Método para analizar y mostrar resultados en un JDialog
+    // Método para analizar una expresión y mostrar los resultados
     public void analizarYMostrar(String expresion) {
         ResultadoAnalisis resultado = analizar(expresion);
         Map<String, Integer> variablesDefinidas = new HashMap<>();
